@@ -29,6 +29,18 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(unique = true) // Optional: if phone should be unique
+    private String phone;
+
+    // Getter and Setter
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     // Implementing UserDetails interface methods
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
