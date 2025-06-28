@@ -1,5 +1,6 @@
 package com.yourbank.controller;
 
+import com.yourbank.dto.AvailableBookSummaryDto;
 import com.yourbank.entity.Book;
 import com.yourbank.enums.BookStatus;
 import com.yourbank.repository.BookRepository;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/books/books-infos")
@@ -174,4 +176,30 @@ public class BookRestController {
 
         return ResponseEntity.badRequest().build();
     }
+
+    @GetMapping("/available-books")
+    public ResponseEntity<List<AvailableBookSummaryDto>> searchBooks(
+        @RequestParam(required = false) String searchParams) {
+
+        // Validation: treat empty or blank strings as null (no filter)
+        if (searchParams != null && searchParams.trim().isEmpty()) {
+            searchParams = null;
+        }
+
+        List<Object[]> results = bookRepository.getAvailableBookRaw(searchParams);
+
+        // Map Object[] to DTO
+        List<AvailableBookSummaryDto> availableBookSummary = results.stream()
+            .map(row -> new AvailableBookSummaryDto(
+                (Long) row[0],
+                (String) row[1],
+                (Integer) row[2],
+                BookStatus.valueOf((String) row[3])
+            ))
+            .collect(Collectors.toList());
+
+        return ResponseEntity.ok(availableBookSummary);
+    }
+
+
 }

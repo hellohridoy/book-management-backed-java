@@ -52,7 +52,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<ApiResponse<JwtResponse>> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 loginRequest.getEmail(),
@@ -63,19 +63,21 @@ public class AuthController {
         // Since User implements UserDetails, it will be the principal
         User user = (User) authentication.getPrincipal();
 
-        // Generate JWT token - you can pass either authentication or user based on your JwtTokenProvider implementation
+        // Generate JWT token
         String jwt = jwtTokenUtil.generateToken(authentication);
-        return ResponseEntity.ok(new JwtResponse(jwt, user.getId(), user.getEmail(), user.getName()));
+        JwtResponse jwtResponse = new JwtResponse(jwt, user.getId(), user.getEmail(), user.getName());
+
+        return ResponseEntity.ok(ApiResponse.success("Login successful", jwtResponse));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationRequest registerRequest) {
+    public ResponseEntity<ApiResponse<String>> registerUser(@Valid @RequestBody RegistrationRequest registerRequest) {
         User user = userService.createUser(registerRequest);
-        return ResponseEntity.ok("User registered successfully!");
+        return ResponseEntity.ok(ApiResponse.success("User registered successfully!", null));
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> LibraryException.notFound("User", Long.valueOf(request.getEmail())));
 
@@ -92,11 +94,11 @@ public class AuthController {
         // Send email
         emailService.sendPasswordResetEmail(user.getEmail(), token.getToken());
 
-        return ResponseEntity.ok("Password reset instructions sent to your email");
+        return ResponseEntity.ok(ApiResponse.success("Password reset instructions sent to your email", null));
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<ApiResponse<String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         PasswordResetToken token = tokenRepository.findByToken(request.getToken())
             .orElseThrow(() -> new LibraryException.InvalidOperationException("Invalid token"));
 
@@ -117,11 +119,11 @@ public class AuthController {
 
         emailService.sendPasswordChangedNotification(user.getEmail());
 
-        return ResponseEntity.ok("Password reset successfully");
+        return ResponseEntity.ok(ApiResponse.success("Password reset successfully", null));
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<ApiResponse<String>> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
         User currentUser = userService.getCurrentUser();
 
         // Verify current password
@@ -134,21 +136,23 @@ public class AuthController {
 
         emailService.sendPasswordChangedNotification(currentUser.getEmail());
 
-        return ResponseEntity.ok("Password changed successfully");
+        return ResponseEntity.ok(ApiResponse.success("Password changed successfully", null));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser() {
+    public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser() {
         User currentUser = userService.getCurrentUser();
-        return ResponseEntity.ok(new UserResponse(
+        UserResponse userResponse = new UserResponse(
             currentUser.getId(),
             currentUser.getEmail(),
             currentUser.getName()
-        ));
+        );
+
+        return ResponseEntity.ok(ApiResponse.success("User profile retrieved successfully", userResponse));
     }
 
     @PutMapping("/me")
-    public ResponseEntity<?> updateCurrentUser(@Valid @RequestBody UpdateUserRequest request) {
+    public ResponseEntity<ApiResponse<String>> updateCurrentUser(@Valid @RequestBody UpdateUserRequest request) {
         User currentUser = userService.getCurrentUser();
 
         currentUser.setName(request.getName());
@@ -163,6 +167,6 @@ public class AuthController {
 
         userRepository.save(currentUser);
 
-        return ResponseEntity.ok("Profile updated successfully");
+        return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", null));
     }
 }

@@ -1,5 +1,6 @@
 package com.yourbank.repository;
 
+import com.yourbank.dto.AvailableBookSummaryDto;
 import com.yourbank.entity.Book;
 import com.yourbank.enums.BookStatus;
 import org.springframework.data.domain.Page;
@@ -143,5 +144,17 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         "(SELECT br.book.id FROM Borrowing br GROUP BY br.book.id " +
         "ORDER BY COUNT(br) DESC LIMIT 10)")
     List<Book> findMostBorrowedBooksJpql();
+
+    @Query(value = """
+    SELECT id, title, total_copies, status
+    FROM books
+    WHERE (
+        :search IS NULL OR TRIM(:search) = ''
+        OR title ILIKE CONCAT('%', :search, '%')
+        OR status = UPPER(:search)
+    )
+    """, nativeQuery = true)
+    List<Object[]> getAvailableBookRaw(@Param("search") String search);
+
 
 }

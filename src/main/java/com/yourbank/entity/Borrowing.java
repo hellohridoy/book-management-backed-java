@@ -2,12 +2,16 @@ package com.yourbank.entity;
 
 import com.yourbank.enums.BorrowingStatus;
 import jakarta.persistence.*;
+import lombok.Data;
+
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Entity
+@Data
 @Table(name = "borrowings")
 public class Borrowing {
 
