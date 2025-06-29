@@ -13,8 +13,8 @@ public class Fine {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user; // Replaced 'Member' with 'User'
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "borrowing_id", nullable = false)
@@ -51,101 +51,41 @@ public class Fine {
     }
 
     // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
-    public Member getMember() {
-        return member;
-    }
+    public Borrowing getBorrowing() { return borrowing; }
+    public void setBorrowing(Borrowing borrowing) { this.borrowing = borrowing; }
 
-    public void setMember(Member member) {
-        this.member = member;
-    }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
 
-    public Borrowing getBorrowing() {
-        return borrowing;
-    }
+    public BigDecimal getPaidAmount() { return paidAmount; }
+    public void setPaidAmount(BigDecimal paidAmount) { this.paidAmount = paidAmount; }
 
-    public void setBorrowing(Borrowing borrowing) {
-        this.borrowing = borrowing;
-    }
+    public Integer getOverdueDays() { return overdueDays; }
+    public void setOverdueDays(Integer overdueDays) { this.overdueDays = overdueDays; }
 
-    public BigDecimal getAmount() {
-        return amount;
-    }
+    public boolean isPaid() { return paid; }
+    public void setPaid(boolean paid) { this.paid = paid; }
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
+    public LocalDateTime getPaidDate() { return paidDate; }
+    public void setPaidDate(LocalDateTime paidDate) { this.paidDate = paidDate; }
 
-    public BigDecimal getPaidAmount() {
-        return paidAmount;
-    }
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
 
-    public void setPaidAmount(BigDecimal paidAmount) {
-        this.paidAmount = paidAmount;
-    }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 
-    public Integer getOverdueDays() {
-        return overdueDays;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public void setOverdueDays(Integer overdueDays) {
-        this.overdueDays = overdueDays;
-    }
-
-    public boolean isPaid() {
-        return paid;
-    }
-
-    public void setPaid(boolean paid) {
-        this.paid = paid;
-    }
-
-    public LocalDateTime getPaidDate() {
-        return paidDate;
-    }
-
-    public void setPaidDate(LocalDateTime paidDate) {
-        this.paidDate = paidDate;
-    }
-
-    public String getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
     @PrePersist
     protected void onCreate() {

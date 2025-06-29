@@ -4,7 +4,6 @@ import com.yourbank.enums.BorrowingStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,9 +18,9 @@ public class Borrowing {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user; // Replacing Member
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
@@ -63,18 +62,14 @@ public class Borrowing {
 
     // Business logic methods
     public boolean isOverdue() {
-        if (returnDate != null) {
-            return false; // Already returned
-        }
+        if (returnDate != null) return false;
         return LocalDate.now().isAfter(dueDate);
     }
 
     public int calculateOverdueDays() {
         if (returnDate != null) {
-            // For returned books, calculate based on return date
             return (int) Math.max(0, ChronoUnit.DAYS.between(dueDate, returnDate) - GRACE_PERIOD_DAYS);
         } else if (isOverdue()) {
-            // For currently overdue books
             return (int) ChronoUnit.DAYS.between(dueDate, LocalDate.now()) - GRACE_PERIOD_DAYS;
         }
         return 0;
@@ -82,11 +77,8 @@ public class Borrowing {
 
     public BigDecimal calculateFineAmount() {
         int overdueDays = calculateOverdueDays();
-        if (overdueDays <= 0) {
-            return BigDecimal.ZERO;
-        }
+        if (overdueDays <= 0) return BigDecimal.ZERO;
 
-        // Cap the maximum fine days
         int daysToCharge = Math.min(overdueDays, MAX_FINE_DAYS);
         return DAILY_FINE_RATE.multiply(new BigDecimal(daysToCharge));
     }
@@ -95,57 +87,12 @@ public class Borrowing {
         return calculateFineAmount().compareTo(BigDecimal.ZERO) > 0;
     }
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Member getMember() { return member; }
-    public void setMember(Member member) { this.member = member; }
-
-    public Book getBook() { return book; }
-    public void setBook(Book book) { this.book = book; }
-
-    public LocalDate getBorrowDate() { return borrowDate; }
-    public void setBorrowDate(LocalDate borrowDate) {
-        this.borrowDate = borrowDate;
-        // Auto-set due date (14 days from borrow date by default)
-        if (borrowDate != null && this.dueDate == null) {
-            this.dueDate = borrowDate.plusDays(14);
-        }
-    }
-
-    public LocalDate getDueDate() { return dueDate; }
-    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
-
-    public LocalDate getReturnDate() { return returnDate; }
-    public void setReturnDate(LocalDate returnDate) {
-        this.returnDate = returnDate;
-        if (returnDate != null) {
-            this.status = BorrowingStatus.RETURNED;
-        }
-    }
-
-    public BorrowingStatus getStatus() { return status; }
-    public void setStatus(BorrowingStatus status) { this.status = status; }
-
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-
-    public Fine getFine() { return fine; }
-    public void setFine(Fine fine) { this.fine = fine; }
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (borrowDate != null && dueDate == null) {
-            dueDate = borrowDate.plusDays(14); // Default 2-week loan period
+            dueDate = borrowDate.plusDays(14);
         }
     }
 

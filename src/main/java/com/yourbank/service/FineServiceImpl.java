@@ -1,7 +1,7 @@
 package com.yourbank.service;
 
 import com.yourbank.entity.Fine;
-import com.yourbank.entity.Member;
+import com.yourbank.entity.User;
 import com.yourbank.exceptions.FineNotFoundException;
 import com.yourbank.exceptions.InvalidPaymentException;
 import com.yourbank.repository.FineRepository;
@@ -66,23 +66,23 @@ public class FineServiceImpl implements FineService {
     }
 
     @Override
-    public List<Fine> getFinesByMember(Member member) {
-        return fineRepository.findByMember(member);
+    public List<Fine> getFinesByUser(User user) {
+        return fineRepository.findByUser(user);
     }
 
     @Override
-    public Page<Fine> getFinesByMember(Member member, Pageable pageable) {
-        return fineRepository.findByMember(member, pageable);
+    public Page<Fine> getFinesByUser(User user, Pageable pageable) {
+        return fineRepository.findByUser(user, pageable);
     }
 
     @Override
-    public List<Fine> getUnpaidFinesByMember(Member member) {
-        return fineRepository.findByMemberAndPaidFalse(member);
+    public List<Fine> getUnpaidFinesByUser(User user) {
+        return fineRepository.findByUserAndPaidFalse(user);
     }
 
     @Override
-    public BigDecimal getTotalUnpaidFinesByMember(Long memberId) {
-        BigDecimal total = fineRepository.sumUnpaidFinesByMember(memberId);
+    public BigDecimal getTotalUnpaidFinesByUser(Long userId) {
+        BigDecimal total = fineRepository.sumUnpaidFinesByUser(userId);
         return total != null ? total : BigDecimal.ZERO;
     }
 

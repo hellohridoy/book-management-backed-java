@@ -1,7 +1,7 @@
 package com.yourbank.service;
 
 import com.yourbank.entity.Fine;
-import com.yourbank.entity.Member;
+import com.yourbank.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -16,10 +16,12 @@ public interface FineService {
     void deleteFine(Long id);
     List<Fine> getAllFines();
     Page<Fine> getAllFines(Pageable pageable);
-    List<Fine> getFinesByMember(Member member);
-    Page<Fine> getFinesByMember(Member member, Pageable pageable);
-    List<Fine> getUnpaidFinesByMember(Member member);
-    BigDecimal getTotalUnpaidFinesByMember(Long memberId);
+
+    List<Fine> getFinesByUser(User user);
+    Page<Fine> getFinesByUser(User user, Pageable pageable);
+    List<Fine> getUnpaidFinesByUser(User user);
+    BigDecimal getTotalUnpaidFinesByUser(Long userId);
+
     Fine markFineAsPaid(Long fineId, BigDecimal amount, String paymentMethod);
     Fine addPartialPayment(Long fineId, BigDecimal amount);
     List<Fine> findFinesByAmountRange(BigDecimal minAmount, BigDecimal maxAmount);

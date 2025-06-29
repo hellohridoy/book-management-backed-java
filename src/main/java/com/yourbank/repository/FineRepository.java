@@ -1,12 +1,10 @@
 package com.yourbank.repository;
 
 import com.yourbank.entity.Fine;
-import com.yourbank.entity.Member;
+import com.yourbank.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -17,14 +15,14 @@ import java.util.List;
 @Repository
 public interface FineRepository extends JpaRepository<Fine, Long> {
 
-    // Find fines by member
-    List<Fine> findByMember(Member member);
+    // Find fines by user
+    List<Fine> findByUser(User user);
 
-    // Find fines by member with pagination
-    Page<Fine> findByMember(Member member, Pageable pageable);
+    // Find fines by user with pagination
+    Page<Fine> findByUser(User user, Pageable pageable);
 
-    // Find unpaid fines by member
-    List<Fine> findByMemberAndPaidFalse(Member member);
+    // Find unpaid fines by user
+    List<Fine> findByUserAndPaidFalse(User user);
 
     // Find paid fines
     List<Fine> findByPaidTrue();
@@ -41,12 +39,12 @@ public interface FineRepository extends JpaRepository<Fine, Long> {
     // Find fines by overdue days greater than
     List<Fine> findByOverdueDaysGreaterThan(Integer days);
 
-    // Find fines for a specific borrowing
+    // Find fine for a specific borrowing
     Fine findByBorrowingId(Long borrowingId);
 
-    // Calculate total unpaid fines amount for a member
-    @Query("SELECT SUM(f.amount) FROM Fine f WHERE f.member.id = :memberId AND f.paid = false")
-    BigDecimal sumUnpaidFinesByMember(@Param("memberId") Long memberId);
+    // Calculate total unpaid fines amount for a user
+    @Query("SELECT SUM(f.amount) FROM Fine f WHERE f.user.id = :userId AND f.paid = false")
+    BigDecimal sumUnpaidFinesByUser(@Param("userId") Long userId);
 
     // Mark fine as paid
     @Modifying

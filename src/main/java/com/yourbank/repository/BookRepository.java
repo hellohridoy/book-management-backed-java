@@ -113,6 +113,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     List<Book> findByAvailableCopiesGreaterThan(Integer copies, Pageable pageable);
 
+    List<Book> findByPublisherContainingIgnoreCaseOrTitleContainingIgnoreCaseOrIsbnContainingIgnoreCase(String publisher, String title, String isbn);
+
+
     //BetweenYear //Date Filter
 
     @Query("select b from Book b where b.publishedYear between :startYear and :endYear")

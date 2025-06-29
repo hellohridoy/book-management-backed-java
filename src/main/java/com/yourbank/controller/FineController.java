@@ -1,12 +1,11 @@
 package com.yourbank.controller;
 
 import com.yourbank.entity.Fine;
-import com.yourbank.entity.Member;
+import com.yourbank.entity.User;
+import com.yourbank.repository.UserRepository;
 import com.yourbank.service.FineService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.hibernate.query.sql.internal.ParameterRecognizerImpl;
+import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,8 +19,11 @@ public class FineController {
 
     private final FineService fineService;
 
-    public FineController(FineService fineService) {
+    private final UserRepository userRepository;
+
+    public FineController(FineService fineService, UserRepository userRepository) {
         this.fineService = fineService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping
@@ -46,34 +48,34 @@ public class FineController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
+    @GetMapping("/fines-infos")
     public ResponseEntity<Page<Fine>> getAllFines(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "createdAt,desc") String[] sort) {
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
         return ResponseEntity.ok(fineService.getAllFines(pageable));
     }
 
-    @GetMapping("/member/{memberId}")
-    public ResponseEntity<Page<Fine>> getFinesByMember(
-        @PathVariable Long memberId,
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<Page<Fine>> getFinesByUser(
+        @PathVariable Long id,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size) {
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        // You'll need to fetch the Member entity first in a real implementation
-        return ResponseEntity.ok(fineService.getFinesByMember(new Member(memberId), pageable));
+        return ResponseEntity.ok(fineService.getFinesByUser(new User(id), pageable));
     }
 
-    @GetMapping("/member/{memberId}/unpaid")
-    public ResponseEntity<List<Fine>> getUnpaidFinesByMember(@PathVariable Long memberId) {
-        // You'll need to fetch the Member entity first in a real implementation
-        return ResponseEntity.ok(fineService.getUnpaidFinesByMember(new Member(memberId)));
+    @GetMapping("/user/{userId}/unpaid")
+    public ResponseEntity<List<Fine>> getUnpaidFinesByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(fineService.getUnpaidFinesByUser(new User(userId)));
     }
 
-    @GetMapping("/member/{memberId}/total-unpaid")
-    public ResponseEntity<BigDecimal> getTotalUnpaidFinesByMember(@PathVariable Long memberId) {
-        return ResponseEntity.ok(fineService.getTotalUnpaidFinesByMember(memberId));
+    @GetMapping("/user/{userId}/total-unpaid")
+    public ResponseEntity<BigDecimal> getTotalUnpaidFinesByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(fineService.getTotalUnpaidFinesByUser(userId));
     }
 
     @PostMapping("/{id}/pay")

@@ -1,9 +1,12 @@
 package com.yourbank.controller;
 
 import com.yourbank.dto.AvailableBookSummaryDto;
+import com.yourbank.dto.BookDto;
 import com.yourbank.entity.Book;
 import com.yourbank.enums.BookStatus;
 import com.yourbank.repository.BookRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,8 +19,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/books/books-infos")
 public class BookRestController {
+
+    private static final Logger logger = LoggerFactory.getLogger(BookRestController.class);
+
 
     private final BookRepository bookRepository;
 
@@ -26,20 +31,20 @@ public class BookRestController {
     }
 
     // Basic CRUD operations
-    @PostMapping
+    @PostMapping("/api/v1/books/books-infos")
     public ResponseEntity<Book> createBook(@RequestBody Book book) {
         Book savedBook = bookRepository.save(book);
         return ResponseEntity.ok(savedBook);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/api/v1/books/books-infos/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable Long id) {
         return bookRepository.findById(id)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/api/v1/books/books-infos/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book book) {
         if (!bookRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -49,7 +54,7 @@ public class BookRestController {
         return ResponseEntity.ok(updatedBook);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/api/v1/books/books-infos/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         if (!bookRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -59,29 +64,29 @@ public class BookRestController {
     }
 
     // Search operations
-    @GetMapping("/search/title")
+    @GetMapping("/api/v1/books/books-infos/search/title")
     public ResponseEntity<List<Book>> findByTitle(@RequestParam String title) {
         return ResponseEntity.ok(bookRepository.findByTitle(title));
     }
 
-    @GetMapping("/search/author")
+    @GetMapping("/api/v1/books/books-infos/search/author")
     public ResponseEntity<List<Book>> findByAuthor(@RequestParam String author) {
         return ResponseEntity.ok(bookRepository.findByAuthor(author));
     }
 
-    @GetMapping("/search/isbn")
+    @GetMapping("/api/v1/books/books-infos/search/isbn")
     public ResponseEntity<List<Book>> findByIsbn(@RequestParam String isbn) {
         return ResponseEntity.ok(bookRepository.findByIsbn(isbn));
     }
 
-    @GetMapping("/search/title-author")
+    @GetMapping("/api/v1/books/books-infos/search/title-author")
     public ResponseEntity<List<Book>> findByTitleAndAuthor(
         @RequestParam String title,
         @RequestParam String author) {
         return ResponseEntity.ok(bookRepository.findByTitleAndAuthor(title, author));
     }
 
-    @GetMapping("/search/title-or-author")
+    @GetMapping("/api/v1/books/books-infos/search/title-or-author")
     public ResponseEntity<List<Book>> findByTitleOrAuthor(
         @RequestParam(required = false) String title,
         @RequestParam(required = false) String author) {
@@ -89,13 +94,13 @@ public class BookRestController {
     }
 
     // Publisher searches
-    @GetMapping("/search/publisher")
+    @GetMapping("/api/v1/books/books-infos/search/publisher")
     public ResponseEntity<List<Book>> findByPublisher(@RequestParam String publisher) {
         return ResponseEntity.ok(bookRepository.findByPublisher(publisher));
     }
 
     // Year range search
-    @GetMapping("/search/year-range")
+    @GetMapping("/api/v1/books/books-infos/search/year-range")
     public ResponseEntity<List<Book>> findByBooksPublishedBetween(
         @RequestParam LocalDate startYear,
         @RequestParam LocalDate endYear) {
@@ -103,14 +108,14 @@ public class BookRestController {
     }
 
     // Title contains (case insensitive)
-    @GetMapping("/search/title-contains")
+    @GetMapping("/api/v1/books/books-infos/search/title-contains")
     public ResponseEntity<List<Book>> findByTitleContainingIgnoreCase(
         @RequestParam String titlePart) {
         return ResponseEntity.ok(bookRepository.findByTitleContainingIgnoreCase(titlePart));
     }
 
     // Status with pagination
-    @GetMapping("/status/{status}")
+    @GetMapping("/api/v1/books/books-infos/status/{status}")
     public ResponseEntity<Page<Book>> findByStatus(
         @PathVariable BookStatus status,
         @RequestParam(defaultValue = "0") int page,
@@ -120,7 +125,7 @@ public class BookRestController {
     }
 
     // Available copies operations
-    @PostMapping("/{id}/decrement-copies")
+    @PostMapping("/api/v1/books/books-infos/{id}/decrement-copies")
     public ResponseEntity<Void> decrementAvailableCopies(
         @PathVariable Long id,
         @RequestParam Integer decrement) {
@@ -129,25 +134,25 @@ public class BookRestController {
     }
 
     // Get book with borrowings
-    @GetMapping("/{id}/with-borrowings")
+    @GetMapping("/api/v1/books/books-infos/{id}/with-borrowings")
     public ResponseEntity<Book> findByIdWithBorrowings(@PathVariable Long id) {
         return ResponseEntity.ok(bookRepository.findByIdWithBorrowings(id));
     }
 
     // Count by status
-    @GetMapping("/count/status/{status}")
+    @GetMapping("/api/v1/books/books-infos/count/status/{status}")
     public ResponseEntity<Long> countByStatus(@PathVariable BookStatus status) {
         return ResponseEntity.ok(bookRepository.countByStatus(status));
     }
 
     // Most borrowed books
-    @GetMapping("/most-borrowed")
+    @GetMapping("/api/v1/books/books-infos/most-borrowed")
     public ResponseEntity<List<Book>> findMostBorrowedBooks() {
         return ResponseEntity.ok(bookRepository.findMostBorrowedBooksJpql());
     }
 
     // Advanced search with multiple criteria
-    @GetMapping("/advanced-search")
+    @GetMapping("/api/v1/books/books-infos/advanced-search")
     public ResponseEntity<List<Book>> advancedSearch(
         @RequestParam(required = false) String title,
         @RequestParam(required = false) String author,
@@ -177,7 +182,7 @@ public class BookRestController {
         return ResponseEntity.badRequest().build();
     }
 
-    @GetMapping("/available-books")
+    @GetMapping("/api/v1/books/books-infos/available-books")
     public ResponseEntity<List<AvailableBookSummaryDto>> searchBooks(
         @RequestParam(required = false) String searchParams) {
 
@@ -199,6 +204,29 @@ public class BookRestController {
             .collect(Collectors.toList());
 
         return ResponseEntity.ok(availableBookSummary);
+    }
+
+    @GetMapping("/api/v1/books/books-infos/by-title")
+    public ResponseEntity<List<BookDto>> getBooks
+        (@RequestParam(required = false) String searchParams) {
+        logger.info("Received searchParams: {}", searchParams);
+        List<Book> books = (searchParams == null || searchParams.trim().isEmpty())
+            ? bookRepository.findAll()
+            : bookRepository.findByPublisherContainingIgnoreCaseOrTitleContainingIgnoreCaseOrIsbnContainingIgnoreCase(
+            searchParams, searchParams, searchParams
+        );
+
+        List<BookDto> dtos = books.stream()
+            .map(book -> new BookDto(
+                book.getId(),
+                book.getTitle(),
+                book.getIsbn(),
+                book.getPublisher(),
+                book.getStatus().toString()
+            ))
+            .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
     }
 
 

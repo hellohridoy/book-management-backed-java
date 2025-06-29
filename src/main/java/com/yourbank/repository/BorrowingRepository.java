@@ -1,7 +1,7 @@
 package com.yourbank.repository;
 
 import com.yourbank.entity.Borrowing;
-import com.yourbank.entity.Member;
+import com.yourbank.entity.User;
 import com.yourbank.enums.BorrowingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,12 +17,12 @@ import java.util.List;
 @Repository
 public interface BorrowingRepository extends JpaRepository<Borrowing, Long> {
 
-    List<Borrowing> findByMember(Member member);
+    List<Borrowing> findByUser (User user);
     List<Borrowing> findByBookId(Long bookId);
     List<Borrowing> findByStatus(BorrowingStatus status);
 
-    @Query("SELECT b FROM Borrowing b WHERE b.member = :member AND b.status = 'ACTIVE'")
-    List<Borrowing> findActiveBorrowingsByMember(@Param("member") Member member);
+    @Query("SELECT b FROM Borrowing b WHERE b.user = :User  AND b.status = 'ACTIVE'")
+    List<Borrowing> findActiveBorrowingsByUser (@Param("User ") User user);
 
     @Query("SELECT b FROM Borrowing b WHERE b.dueDate < :today AND b.status = 'ACTIVE'")
     List<Borrowing> findOverdueBorrowings(@Param("today") LocalDate today);
@@ -37,14 +37,17 @@ public interface BorrowingRepository extends JpaRepository<Borrowing, Long> {
     @Query("UPDATE Borrowing b SET b.status = 'OVERDUE' WHERE b.dueDate < CURRENT_DATE AND b.status = 'ACTIVE'")
     int markOverdueBorrowings();
 
-    Page<Borrowing> findByMember(Member member, Pageable pageable);
+    Page<Borrowing> findByUser (User  User , Pageable pageable);
 
-    @Query("SELECT b FROM Borrowing b WHERE " +
-        "(:memberId IS NULL OR b.member.id = :memberId) AND " +
-        "(:bookId IS NULL OR b.book.id = :bookId) AND " +
-        "(:status IS NULL OR b.status = :status)")
+
+    @Query("""
+        SELECT b FROM Borrowing b
+        WHERE (:userId IS NULL OR b.user.id = :userId)
+          AND (:bookId IS NULL OR b.book.id = :bookId)
+          AND (:status IS NULL OR b.status = :status)
+    """)
     Page<Borrowing> searchBorrowings(
-        @Param("memberId") Long memberId,
+        @Param("userId") Long userId,
         @Param("bookId") Long bookId,
         @Param("status") BorrowingStatus status,
         Pageable pageable);

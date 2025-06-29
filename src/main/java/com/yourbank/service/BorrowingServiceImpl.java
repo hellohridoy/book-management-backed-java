@@ -5,8 +5,6 @@ import com.yourbank.enums.BorrowingStatus;
 import com.yourbank.exceptions.LibraryException;
 import com.yourbank.repository.BookRepository;
 import com.yourbank.repository.BorrowingRepository;
-import com.yourbank.service.BorrowingService;
-import com.yourbank.service.FineService;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -95,13 +94,13 @@ public class BorrowingServiceImpl implements BorrowingService {
     }
 
     @Override
-    public List<Borrowing> getBorrowingsByMember(Member member) {
-        return borrowingRepository.findByMember(member);
+    public List<Borrowing> getBorrowingsByMember(User user) {
+        return borrowingRepository.findByUser(user);
     }
 
     @Override
-    public List<Borrowing> getActiveBorrowingsByMember(Member member) {
-        return borrowingRepository.findActiveBorrowingsByMember(member);
+    public List<Borrowing> getActiveBorrowingsByUser(User user) {
+        return borrowingRepository.findActiveBorrowingsByUser(user);
     }
 
     @Override
@@ -147,7 +146,7 @@ public class BorrowingServiceImpl implements BorrowingService {
         if (fineAmount.compareTo(BigDecimal.ZERO) > 0) {
             Fine fine = new Fine();
             fine.setBorrowing(borrowing);
-            fine.setMember(borrowing.getMember());
+            fine.setUser(borrowing.getUser());
             fine.setAmount(fineAmount);
             fine.setOverdueDays(borrowing.calculateOverdueDays());
             fine.setPaid(false);
@@ -171,5 +170,25 @@ public class BorrowingServiceImpl implements BorrowingService {
     @Override
     public Page<Borrowing> searchBorrowings(Long memberId, Long bookId, BorrowingStatus status, Pageable pageable) {
         return borrowingRepository.searchBorrowings(memberId, bookId, status, pageable);
+    }
+
+    @Override
+    public double calculateOverdueFine(Long id) {
+        Borrowing borrowing = borrowingRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Borrowing not found"));
+
+        LocalDate dueDate = borrowing.getDueDate();
+        LocalDate returnDate = borrowing.getReturnDate(); // or LocalDate.now() if not yet returned
+
+        if (returnDate == null) {
+            returnDate = LocalDate.now();
+        }
+
+        long overdueDays = ChronoUnit.DAYS.between(dueDate, returnDate);
+        if (overdueDays <= 0) return 0.0;
+
+        double finePerDay = 10.0; // your rate
+        return overdueDays * finePerDay;
+
     }
 }
